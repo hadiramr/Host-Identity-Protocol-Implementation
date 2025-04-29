@@ -63,12 +63,12 @@ def verify_timestamped_message(message_with_time, window=30):
         return False, "Invalid message format!"
 
 # Simulate Full Flow
-original_message = b"Prove your identity"
-timestamped_message = original_message + b'||' + str(time.time()).encode()
+originalMessage = b"Prove your identity"
+timestampedMessage = originalMessage + b'||' + str(time.time()).encode()
 
 # Authentication
-auth_A_to_B, signature_A = authenticate(A_private, A_public, timestamped_message)
-auth_B_to_A, signature_B = authenticate(B_private, B_public, timestamped_message)
+auth_A_to_B, signature_A = authenticate(A_private, A_public, timestampedMessage)
+auth_B_to_A, signature_B = authenticate(B_private, B_public, timestampedMessage)
 
 # Authorization
 A_role = "analyst"
@@ -77,10 +77,10 @@ authorization_result = authorize(A_role, requested_action)
 
 # AES Secure Communication
 aes_key = Fernet.generate_key()
-encrypted_msg, decrypted_msg = aes_communication(aes_key, b"Confidential message from A to B")
+encrypted_message, decrypted_message = aes_communication(aes_key, b"Confidential message from A to B")
 
 # Replay Attack Check (simulate 5 seconds delay)
-valid_replay_check, replay_result = verify_timestamped_message(timestamped_message)
+valid_replay_check, replay_result = verify_timestamped_message(timestampedMessage)
 
 # Output Results
 {
@@ -89,8 +89,8 @@ valid_replay_check, replay_result = verify_timestamped_message(timestamped_messa
     "Role": A_role,
     "Requested Action": requested_action,
     "Authorization Result": authorization_result,
-    "Encrypted AES Message": encrypted_msg.decode(),
-    "Decrypted AES Message": decrypted_msg.decode(),
+    "Encrypted AES Message": encrypted_message.decode(),
+    "Decrypted AES Message": decrypted_message.decode(),
     "Replay Check Valid": valid_replay_check,
     "Replay Check Result": replay_result
 }
