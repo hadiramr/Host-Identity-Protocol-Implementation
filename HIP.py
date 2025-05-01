@@ -5,7 +5,7 @@ import time
 
 def generate_key_pair():
     PrivateKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    PublicKey = PrivateKey.public_key()  
+    PublicKey = PrivateKey.public_key()
     return PrivateKey, PublicKey
 
 APrivate, APublic = generate_key_pair()
@@ -16,7 +16,6 @@ ACL = {
     "analyst": ["read", "write"],
     "guest": ["read"]
 }
-
 
 def authenticate(signerPrivate, verifierPublic, Message):
     try:
@@ -51,9 +50,8 @@ last_timestamp = 0
 def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoofed=False, replay=False):
     global last_timestamp
 
-    # Use old timestamp if simulating replay attack
     if replay:
-        timestamp = last_timestamp
+        timestamp = last_timestamp  # Intentionally reuse old timestamp
     else:
         timestamp = time.time()
 
@@ -73,7 +71,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
     else:
         authz = "Skipped (authentication failed)"
 
-    # AES
+    # AES encryption/decryption
     aesKey = Fernet.generate_key()
     encrypted, decrypted = aes_communication(aesKey, message)
     if not (authAtoB and authBtoA and authz == True):
@@ -87,7 +85,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
             ts = float(msg_parts[1].decode())
             current_time = time.time()
 
-            if ts < last_timestamp:
+            if ts <= last_timestamp:
                 replay_valid = False
                 replay_result = "Detected replay attack! Hacker reused an old message."
             elif abs(current_time - ts) > 30:
@@ -96,7 +94,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
             else:
                 replay_valid = True
                 replay_result = msg.decode()
-                last_timestamp = ts
+                last_timestamp = ts  # Update timestamp only if message is fresh
         except:
             replay_valid = False
             replay_result = "Invalid timestamp format!"
@@ -115,13 +113,11 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
     print(f"Replay Check Valid: {replay_valid}\n")
     print(f"Replay Check Result: {replay_result}\n")
 
-# Scenarios
+# Test Scenarios
 run_scenario("Scenario 1", APrivate, BPrivate, "analyst", "write", b"Hello")
 print()
 run_scenario("Scenario 2", APrivate, BPrivate, "analyst", "delete", b"Hello 2")
 print()
 run_scenario("Scenario 3", BPrivate, APrivate, "guest", "read", b"Hello 3", spoofed=True)
 print()
-run_scenario("Scenario 4 (Replay Attack)", APrivate, BPrivate, "analyst", "write", b"Hello", replay=True)replay_result
-}
-
+run_scenario("Scenario 4 (Replay Attack)", APrivate, BPrivate, "analyst", "write", b"Hello", replay=True)
