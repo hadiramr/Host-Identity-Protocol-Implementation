@@ -5,7 +5,7 @@ import time
 
 def generate_key_pair():
     PrivateKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    PublicKey = PrivateKey.public_key()  # Fixed method name
+    PublicKey = PrivateKey.public_key()  
     return PrivateKey, PublicKey
 
 APrivate, APublic = generate_key_pair()
