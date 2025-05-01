@@ -51,7 +51,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
     global last_timestamp
 
     if replay:
-        timestamp = last_timestamp  # Intentionally reuse old timestamp
+        timestamp = last_timestamp  
     else:
         timestamp = time.time()
 
@@ -59,8 +59,9 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
 
     # Authentication
     if spoofed:
-        authAtoB, _ = authenticate(sender_priv, receiver_priv.public_key(), timestamped)
-        authBtoA, _ = authenticate(receiver_priv, sender_priv.public_key(), timestamped)
+        # Intentionally use mismatched key pairs to simulate failed authentication
+        authAtoB, _ = authenticate(sender_priv, BPublic, timestamped)  # pretending to be B, using A's private key
+        authBtoA, _ = authenticate(receiver_priv, APublic, timestamped)  # pretending to be A, using B's private key
     else:
         authAtoB, _ = authenticate(sender_priv, sender_priv.public_key(), timestamped)
         authBtoA, _ = authenticate(receiver_priv, receiver_priv.public_key(), timestamped)
@@ -102,6 +103,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
         replay_valid = False
         replay_result = "Authentication failed — Replay check not performed"
 
+    # Output
     print(f"{title}:")
     print(f"Authentication A -> B: {authAtoB}\n")
     print(f"Authentication B -> A: {authBtoA}\n")
@@ -121,3 +123,5 @@ print()
 run_scenario("Scenario 3", BPrivate, APrivate, "guest", "read", b"Hello 3", spoofed=True)
 print()
 run_scenario("Scenario 4 (Replay Attack)", APrivate, BPrivate, "analyst", "write", b"Hello", replay=True)
+    # Replay Check
+    
