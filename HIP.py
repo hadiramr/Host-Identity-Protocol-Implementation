@@ -125,5 +125,5 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
 
 run_scenario("Scenario 1", APrivate, BPrivate, "analyst", "write", b"Hello")
 run_scenario("Scenario 2 (Spoofed Communication)", APrivate, BPrivate, "analyst", "delete", b"Hello 2", spoofed=True)
-run_scenario("Scenario 3", BPrivate, APrivate, "guest", "read", b"Hello 3")
+run_scenario("Scenario 3", BPrivate, APrivate, "guest", "write", b"Hello 3")
 run_scenario("Scenario 4 (Replay Attack)", APrivate, BPrivate, "analyst", "write", b"Hello", replay=True)
