@@ -3,20 +3,24 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
 import time
 
+# Generate RSA key pairs
 def generate_key_pair():
     PrivateKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     PublicKey = PrivateKey.public_key()
     return PrivateKey, PublicKey
 
+# Generate keys for A and B
 APrivate, APublic = generate_key_pair()
 BPrivate, BPublic = generate_key_pair()
 
+# Role-based Access Control
 ACL = {
     "admin": ["read", "write", "delete"],
     "analyst": ["read", "write"],
     "guest": ["read"]
 }
 
+# Digital signature (Authentication)
 def authenticate(signerPrivate, verifierPublic, Message):
     try:
         signature = signerPrivate.sign(
@@ -34,19 +38,22 @@ def authenticate(signerPrivate, verifierPublic, Message):
     except Exception:
         return False, None
 
+# Authorization based on role
 def authorize(role, action):
     allowed_actions = ACL.get(role.lower(), [])
     return action in allowed_actions
 
+# AES Encryption/Decryption
 def aes_communication(shared_key, message):
     cipher = Fernet(shared_key)
     encrypted = cipher.encrypt(message)
     decrypted = cipher.decrypt(encrypted)
     return encrypted.decode(), decrypted.decode()
 
-# Global timestamp for replay protection
+# Global timestamp for replay attack prevention
 last_timestamp = 0
 
+# Scenario Runner
 def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoofed=False, replay=False):
     global last_timestamp
 
@@ -57,11 +64,11 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
 
     timestamped = message + b'||' + str(timestamp).encode()
 
-    # Authentication
+    # Authentication logic
     if spoofed:
-        # Intentionally use mismatched key pairs to simulate failed authentication
-        authAtoB, _ = authenticate(sender_priv, BPublic, timestamped)  # pretending to be B, using A's private key
-        authBtoA, _ = authenticate(receiver_priv, APublic, timestamped)  # pretending to be A, using B's private key
+        # Use mismatched public keys to simulate spoofing and force failure
+        authAtoB, _ = authenticate(sender_priv, BPublic, timestamped)
+        authBtoA, _ = authenticate(receiver_priv, APublic, timestamped)
     else:
         authAtoB, _ = authenticate(sender_priv, sender_priv.public_key(), timestamped)
         authBtoA, _ = authenticate(receiver_priv, receiver_priv.public_key(), timestamped)
@@ -72,13 +79,13 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
     else:
         authz = "Skipped (authentication failed)"
 
-    # AES encryption/decryption
+    # AES communication
     aesKey = Fernet.generate_key()
     encrypted, decrypted = aes_communication(aesKey, message)
     if not (authAtoB and authBtoA and authz == True):
         decrypted = "Not allowed"
 
-    # Replay Check
+    # Replay protection
     if authAtoB and authBtoA:
         try:
             msg_parts = timestamped.split(b'||')
@@ -95,7 +102,7 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
             else:
                 replay_valid = True
                 replay_result = msg.decode()
-                last_timestamp = ts  # Update timestamp only if message is fresh
+                last_timestamp = ts
         except:
             replay_valid = False
             replay_result = "Invalid timestamp format!"
@@ -115,13 +122,8 @@ def run_scenario(title, sender_priv, receiver_priv, role, action, message, spoof
     print(f"Replay Check Valid: {replay_valid}\n")
     print(f"Replay Check Result: {replay_result}\n")
 
-# Test Scenarios
+
 run_scenario("Scenario 1", APrivate, BPrivate, "analyst", "write", b"Hello")
-print()
-run_scenario("Scenario 2", APrivate, BPrivate, "analyst", "delete", b"Hello 2")
-print()
-run_scenario("Scenario 3", BPrivate, APrivate, "guest", "read", b"Hello 3", spoofed=True)
-print()
+run_scenario("Scenario 2 (Spoofed Communication)", APrivate, BPrivate, "analyst", "delete", b"Hello 2", spoofed=True)
+run_scenario("Scenario 3", BPrivate, APrivate, "guest", "read", b"Hello 3")
 run_scenario("Scenario 4 (Replay Attack)", APrivate, BPrivate, "analyst", "write", b"Hello", replay=True)
-    # Replay Check
-    
