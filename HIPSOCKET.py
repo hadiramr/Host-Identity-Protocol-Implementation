@@ -1,4 +1,4 @@
-# imports due to code execution state reset
+# imports 
 import socket
 import threading
 import time
