@@ -1,0 +1,18 @@
+{
+    "admin": {
+        "password": "admin123",
+        "role": "admin"
+    },
+    "analyst": {
+        "password": "analyst123",
+        "role": "analyst"
+    },
+    "guest": {
+        "password": "guest123",
+        "role": "guest"
+    },
+    "hh": {
+        "password": "hh",
+        "role": "guest"
+    }
+}
